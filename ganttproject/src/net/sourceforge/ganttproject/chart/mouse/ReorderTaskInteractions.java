@@ -1,27 +1,28 @@
 package net.sourceforge.ganttproject.chart.mouse;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Supplier;
 import net.sourceforge.ganttproject.GanttTree2;
-import net.sourceforge.ganttproject.action.task.TaskActionBase;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 
 import java.awt.event.MouseEvent;
+import java.util.Comparator;
 import java.util.List;
+import java.util.ListIterator;
 
 public class ReorderTaskInteractions extends MouseInteractionBase implements MouseInteraction {
-    private static final int MOVE_OFFSET = 20;
+    private static final int MOVE_HEIGHT = 20;
 
     private final List<Task> myTasks;
-    private final TaskManager myTaskManager;
     private final UIFacade myUIFacade;
     private final MouseEvent myMouseEvent;
     private final TaskContainmentHierarchyFacade myTaskHierarchy;
     private final GanttTree2 myTree;
 
-    private int currentOffset;
+    private int totalMovement;
     private int minOffset;
     private int maxOffset;
 
@@ -30,87 +31,67 @@ public class ReorderTaskInteractions extends MouseInteractionBase implements Mou
         super(chartDateGrid.getDateAt(e.getX()), chartDateGrid);
         myUIFacade = uiFacade;
         myTasks = tasks;
-        myTaskManager = taskManager;
         myTaskHierarchy = taskManager.getTaskHierarchy();
         myMouseEvent = e;
         myTree = tree;
 
-        currentOffset = 0;
-        maxOffset = Integer.MAX_VALUE;
-        minOffset = Integer.MIN_VALUE;
-    }
+        myTasks.sort(new Comparator<Task>() {
+            @Override
+            public int compare(Task o1, Task o2) {
+                return myTaskHierarchy.getTaskIndex(o1) - myTaskHierarchy.getTaskIndex(o2);
+            }
+        });
 
-    public boolean isValidOffset(int offset) {
-        if (currentOffset == offset || offset >= maxOffset || offset <= minOffset)
-            return false;
+        totalMovement = 0;
 
+        minOffset = Integer.MAX_VALUE;
+        maxOffset = Integer.MIN_VALUE;
         for (Task task : myTasks) {
-            if (offset < currentOffset && myTaskHierarchy.getTaskIndex(task) <= 0) {
-                minOffset = offset;
-                return false;
-            }
-            if (offset > currentOffset && myTaskHierarchy.getTaskIndex(task) >= myTaskManager.getTaskCount() - 1) {
-                maxOffset = offset;
-                return false;
-            }
+            int index = myTaskHierarchy.getTaskIndex(task);
+            minOffset = Math.min(index, minOffset);
+            maxOffset = Math.max(index, maxOffset);
         }
-
-        return true;
+        minOffset = -minOffset;
+        maxOffset = taskManager.getTaskCount() - 1 - maxOffset;
     }
 
     @Override
     public void apply(MouseEvent event) {
-        int offset = event.getY() - myMouseEvent.getY();
-        offset /= MOVE_OFFSET;
+        int currentMovement = event.getY() - myMouseEvent.getY();
+        currentMovement /= MOVE_HEIGHT;
+        currentMovement = Math.max(minOffset, Math.min(maxOffset, currentMovement));
 
-        final int upDown = Integer.compare(offset, currentOffset);
-        offset = currentOffset + upDown;
-
-        if (!isValidOffset(offset))
+        if (currentMovement == totalMovement)
             return;
 
-        currentOffset = offset;
+        final int finalCurrentMovement = currentMovement;
 
+        myUIFacade.getUndoManager().undoableEdit("Task reordered", new Runnable() {
+            @Override
+            public void run() {
+                moveOffset(finalCurrentMovement - totalMovement);
+            }
+        });
+
+        totalMovement = currentMovement;
+    }
+
+    public void moveOffset(int offset) {
         myTree.commitIfEditing();
 
-        moveIndex(upDown);
+        TwoWayIterator<Task> it = new TwoWayIterator<>(myTasks, offset > 0);
+        while (it.hasNext()) {
+            final Task task = it.next();
+            final Task parent = myTaskHierarchy.getContainer(task);
+            final int index = myTaskHierarchy.getTaskIndex(task) + offset;
+            myTaskHierarchy.move(task, parent, index);
+        }
 
         myUIFacade.getTaskTree().makeVisible(myTasks.get(0));
         myUIFacade.getGanttChart().getProject().setModified();
     }
 
-    public void moveIndex(int upDown) {
-        for (Task task : myTasks) {
-            final Task parent = myTaskHierarchy.getContainer(task);
-            final int index = myTaskHierarchy.getTaskIndex(task) + upDown;
-
-            myUIFacade.getTaskTree().applyPreservingExpansionState(task, new Predicate<Task>() {
-                public boolean apply(Task t) {
-                    myTaskHierarchy.move(t, parent, index);
-                    return true;
-                }
-            });
-        }
-    }
-
     @Override
     public void finish() {
-        final int sign = Integer.compare(currentOffset, 0);
-        final int move = Math.abs(currentOffset);
-        for (int i = 0; i < move; i++) {
-            moveIndex(-sign);
-        }
-
-        myUIFacade.getUndoManager().undoableEdit("Task reordered", new Runnable() {
-            @Override
-            public void run() {
-                myTree.commitIfEditing();
-                for (int i = 0; i < move; i++) {
-                    moveIndex(sign);
-                }
-                myUIFacade.getTaskTree().makeVisible(myTasks.get(0));
-                myUIFacade.getGanttChart().getProject().setModified();
-            }
-        });
     }
 }
