@@ -51,6 +51,9 @@ public class TaskNode extends DefaultMutableTreeTableNode {
     return task.getPriority();
   }
 
+  public String getTaskMainInfo(){
+    return task.getTaskMainInfo();
+  }
   /**
    * Sets the name of the task.
    * 
