@@ -135,23 +135,4 @@ public class TestTaskInfoImp extends TaskTestCase {
 
     private WeekendCalendarImpl myWeekendCalendar = new WeekendCalendarImpl();
 
-
-
-    /*public void testGetTaskMainInfoHTML() {
-        Task task1 = getTaskManager().createTask();
-        task1.setStart(TestSetupHelper.newFriday());// Friday
-        task1.setEnd(TestSetupHelper.newTuesday()); // Tuesday
-        //task1.setName("task_1");
-        assertEquals("Unexpected length of task=" + task1
-                + " which overlaps weekend", 2f, task1.getDuration().getLength(
-                GregorianTimeUnitStack.DAY), 0.1);
-        /*TaskInfo taskInfo = task1.getTaskInfo();
-        String info = "<html>Name: task_1<br>" +
-                "Duration: 6 days<br>" +
-                "Completion Percentage: 0%<br>" +
-                "Remaining Time: 6 days<br> " +
-                "Priority: normal<br>" +
-                "Notes: </html>";
-        assertEquals(info, taskInfo.getTaskMainInfoHTML() );
-    }*/
 }
