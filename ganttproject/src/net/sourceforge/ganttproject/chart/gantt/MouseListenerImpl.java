@@ -135,6 +135,9 @@ class MouseListenerImpl extends MouseListenerBase {
         startDrawDependency(e, itemUnderPoint);
         return;
       }
+      if (text.equals(GPAction.getKeyStrokeText("mouse.reorder.task"))) {
+        startReorderTasks(e, taskUnderPointer);
+      }
     } else {
       // Otherwise process boundary change or progress change
       handleEvent(itemUnderPoint, e);
@@ -153,6 +156,16 @@ class MouseListenerImpl extends MouseListenerBase {
     List<Task> roots = Lists.newArrayList();
     ourRetainRootsAlgorithm.run(getTaskSelectionManager().getSelectedTasks().toArray(new Task[0]), getParentTask, roots);
     myChartImplementation.beginMoveTaskInteractions(e, roots);
+  }
+
+  private void startReorderTasks(MouseEvent e, Task taskUnderPointer) {
+    if (!getTaskSelectionManager().isTaskSelected(taskUnderPointer)) {
+      getTaskSelectionManager().clear();
+      getTaskSelectionManager().addTask(taskUnderPointer);
+    }
+    List<Task> roots = Lists.newArrayList();
+    ourRetainRootsAlgorithm.run(getTaskSelectionManager().getSelectedTasks().toArray(new Task[0]), getParentTask, roots);
+    myChartImplementation.beginReorderTaskInteractions(e, roots);
   }
 
   private void handleEvent(ChartItem itemUnderPoint, MouseEvent e) {

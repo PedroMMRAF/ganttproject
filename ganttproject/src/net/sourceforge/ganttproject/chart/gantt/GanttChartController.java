@@ -43,12 +43,7 @@ import net.sourceforge.ganttproject.chart.item.ChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskBoundaryChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskProgressChartItem;
 import net.sourceforge.ganttproject.chart.item.TaskRegularAreaChartItem;
-import net.sourceforge.ganttproject.chart.mouse.ChangeTaskEndInteraction;
-import net.sourceforge.ganttproject.chart.mouse.ChangeTaskProgressInteraction;
-import net.sourceforge.ganttproject.chart.mouse.ChangeTaskStartInteraction;
-import net.sourceforge.ganttproject.chart.mouse.DrawDependencyInteraction;
-import net.sourceforge.ganttproject.chart.mouse.MoveTaskInteractions;
-import net.sourceforge.ganttproject.chart.mouse.TimelineFacadeImpl;
+import net.sourceforge.ganttproject.chart.mouse.*;
 import net.sourceforge.ganttproject.gui.TaskTreeUIFacade;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
@@ -148,6 +143,11 @@ public class GanttChartController extends AbstractChartImplementation implements
   public void beginMoveTaskInteractions(MouseEvent e, List<Task> tasks) {
     setActiveInteraction(new MoveTaskInteractions(e, tasks, new TimelineFacadeImpl(getChartModel(), getTaskManager()),
         getUIFacade(), getTaskManager().getAlgorithmCollection().getRecalculateTaskScheduleAlgorithm()));
+  }
+  
+  public void beginReorderTaskInteractions(MouseEvent e, List<Task> tasks) {
+    setActiveInteraction(new ReorderTaskInteractions(e, tasks, getTaskManager(),
+            new TimelineFacadeImpl(getChartModel(), getTaskManager()), getUIFacade(), myTree));
   }
 
   @Override
