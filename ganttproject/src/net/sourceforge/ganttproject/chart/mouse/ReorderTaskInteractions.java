@@ -46,11 +46,13 @@ public class ReorderTaskInteractions extends MouseInteractionBase implements Mou
 
         minOffset = Integer.MAX_VALUE;
         maxOffset = Integer.MIN_VALUE;
+
         for (Task task : myTasks) {
             int index = myTaskHierarchy.getTaskIndex(task);
             minOffset = Math.min(index, minOffset);
             maxOffset = Math.max(index, maxOffset);
         }
+
         minOffset = -minOffset;
         maxOffset = taskManager.getTaskCount() - 1 - maxOffset;
     }
