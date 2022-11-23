@@ -44,17 +44,27 @@ public class ReorderTaskInteractions extends MouseInteractionBase implements Mou
 
         totalMovement = 0;
 
-        minOffset = Integer.MAX_VALUE;
-        maxOffset = Integer.MIN_VALUE;
+        minOffset = Integer.MIN_VALUE;
+        maxOffset = Integer.MAX_VALUE;
 
         for (Task task : myTasks) {
+            int maxIndex = getLastSiblingIndex(task);
             int index = myTaskHierarchy.getTaskIndex(task);
-            minOffset = Math.min(index, minOffset);
-            maxOffset = Math.max(index, maxOffset);
+            minOffset = Math.max(- index, minOffset);
+            maxOffset = Math.min(maxIndex - index, maxOffset);
+
+
+        }
+    }
+
+    public int getLastSiblingIndex(Task task) {
+        Task nextSibling;
+
+        while ((nextSibling = myTaskHierarchy.getNextSibling(task)) != null) {
+            task = nextSibling;
         }
 
-        minOffset = -minOffset;
-        maxOffset = taskManager.getTaskCount() - 1 - maxOffset;
+        return myTaskHierarchy.getTaskIndex(task);
     }
 
     @Override
@@ -68,12 +78,7 @@ public class ReorderTaskInteractions extends MouseInteractionBase implements Mou
 
         final int finalCurrentMovement = currentMovement;
 
-        myUIFacade.getUndoManager().undoableEdit("Task reordered", new Runnable() {
-            @Override
-            public void run() {
-                moveOffset(finalCurrentMovement - totalMovement);
-            }
-        });
+        moveOffset(finalCurrentMovement - totalMovement);
 
         totalMovement = currentMovement;
     }
@@ -86,7 +91,13 @@ public class ReorderTaskInteractions extends MouseInteractionBase implements Mou
             final Task task = it.next();
             final Task parent = myTaskHierarchy.getContainer(task);
             final int index = myTaskHierarchy.getTaskIndex(task) + offset;
-            myTaskHierarchy.move(task, parent, index);
+
+            myUIFacade.getUndoManager().undoableEdit("Task reordered", new Runnable() {
+                @Override
+                public void run() {
+                    myTaskHierarchy.move(task, parent, index);
+                }
+            });
         }
 
         myUIFacade.getTaskTree().makeVisible(myTasks.get(0));
