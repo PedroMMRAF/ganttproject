@@ -91,10 +91,10 @@ public class TaskInfoImp implements TaskInfo {
         Calendar currentDate = new GregorianCalendar();
         if (currentDate.getTimeInMillis() < this.start.getTimeInMillis())
             currentDate.setTimeInMillis(this.start.getTimeInMillis());
-        Calendar end = new GregorianCalendar();
-        end.setTimeInMillis(getEnd().getTimeInMillis());
+        Calendar endDate = new GregorianCalendar();
+        endDate.setTimeInMillis(getEnd().getTimeInMillis());
         int numberOfDays = 0;
-        while (currentDate.before(end)) {
+        while (currentDate.before(endDate)) {
             if ((Calendar.SATURDAY != currentDate.get(Calendar.DAY_OF_WEEK))
                     && (Calendar.SUNDAY != currentDate.get(Calendar.DAY_OF_WEEK))) {
                 numberOfDays++;
@@ -116,9 +116,12 @@ public class TaskInfoImp implements TaskInfo {
 
     @Override
     public String getTaskMainInfoHTML() {
-        String outPutNotes = getNotes(); 
-        if (outPutNotes.length() > MAX_OUTPUT_NOTES_LENGTH)
-            outPutNotes = outPutNotes.substring(0, MAX_OUTPUT_NOTES_LENGTH) + "\n <b>more...</b>";
+        String outPutNotes = getNotes();
+        boolean notesAreBiggerThenLimit = false;
+        if (outPutNotes.length() > MAX_OUTPUT_NOTES_LENGTH) {
+            outPutNotes = outPutNotes.substring(0, MAX_OUTPUT_NOTES_LENGTH) + "\n";
+            notesAreBiggerThenLimit = true;
+        }
         outPutNotes = wrapNotes(outPutNotes);
         String info = "Name: " + getName() + "\n" +
                 "Duration: " + getDuration() + " days\n" +
@@ -126,7 +129,8 @@ public class TaskInfoImp implements TaskInfo {
                 "Remaining Time: " + getRemainingTime() + " days\n " +
                 "Priority: " + getPriority() + "\n" +
                 "Notes: " + outPutNotes;
-        info = GanttLanguage.getInstance().formatText("task.notesTooltip.pattern", info.replace("\n", "<br>"));
+        info = GanttLanguage.getInstance().formatText("task.infoNotesTooltip.pattern",
+                info.replace("\n", "<br>"), notesAreBiggerThenLimit ? "more..." : "");
         return info;
     }
 
