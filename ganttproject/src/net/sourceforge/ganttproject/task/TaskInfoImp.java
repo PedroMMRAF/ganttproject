@@ -116,7 +116,7 @@ public class TaskInfoImp implements TaskInfo {
 
     @Override
     public String getTaskMainInfoHTML() {
-        String outPutNotes = getNotes();
+        String outPutNotes = getNotes(); 
         if (outPutNotes.length() > MAX_OUTPUT_NOTES_LENGTH)
             outPutNotes = outPutNotes.substring(0, MAX_OUTPUT_NOTES_LENGTH) + "\n <b>more...</b>";
         outPutNotes = wrapNotes(outPutNotes);
