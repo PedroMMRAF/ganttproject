@@ -41,7 +41,7 @@ public class TestTaskInfoImp extends TaskTestCase {
         };
     }
 
-    public void testeGetTaskMainInfoHTML1() {
+    public void testGetTaskMainInfoHTML1() {
         Task task1 = getTaskManager().createTask();
         task1.setStart(TestSetupHelper.newFriday());// Friday
         task1.setEnd(TestSetupHelper.newTuesday()); // Tuesday
@@ -52,7 +52,7 @@ public class TestTaskInfoImp extends TaskTestCase {
                 "Completion Percentage: 0%<br>" +
                 "Remaining Time: 0 days<br> " +
                 "Priority: normal<br>" +
-                "Notes: </html>";
+                "Notes: <b></b></html>";
         assertEquals(info, taskInfo.getTaskMainInfoHTML() );
     }
     public void testGetTaskMainInfoHTML2() {
@@ -66,7 +66,7 @@ public class TestTaskInfoImp extends TaskTestCase {
                 "Completion Percentage: 0%<br>" +
                 "Remaining Time: 6 days<br> " +
                 "Priority: normal<br>" +
-                "Notes: </html>";
+                "Notes: <b></b></html>";
         assertEquals(info, taskInfo.getTaskMainInfoHTML() );
     }
 
@@ -82,7 +82,7 @@ public class TestTaskInfoImp extends TaskTestCase {
                 "Completion Percentage: 0%<br>" +
                 "Remaining Time: 6 days<br> " +
                 "Priority: normal<br>" +
-                "Notes: test notes</html>";
+                "Notes: test notes<b></b></html>";
         assertEquals(info, taskInfo.getTaskMainInfoHTML() );
     }
 
@@ -110,7 +110,7 @@ public class TestTaskInfoImp extends TaskTestCase {
                 "test notes test notes test notes test<br>notes test notes test notes test notes<br>" +
                 "test notes test notes test notes test<br>notes test notes test notes test notes<br>" +
                 "test notes test notes test notes test<br>notes test notes test notes test notes<br>" +
-                "test notes test notes test notes test <br><br><b>more...</b></html>";
+                "test notes test notes test notes test <br><b>more...</b></html>";
         assertEquals(info, taskInfo.getTaskMainInfoHTML());
     }
 
@@ -125,7 +125,7 @@ public class TestTaskInfoImp extends TaskTestCase {
                 "Completion Percentage: 20%<br>" +
                 "Remaining Time: 1 days<br> " +
                 "Priority: normal<br>" +
-                "Notes: test notes</html>";
+                "Notes: test notes<b></b></html>";
         assertEquals(info, taskInfo.getTaskMainInfoHTML() );
     }
     @Override
