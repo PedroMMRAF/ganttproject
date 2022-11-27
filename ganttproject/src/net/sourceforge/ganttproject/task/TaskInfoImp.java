@@ -1,5 +1,6 @@
 package net.sourceforge.ganttproject.task;
 
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -88,10 +89,10 @@ public class TaskInfoImp implements TaskInfo {
 
     @Override
     public int getRemainingTime() {
-        Calendar currentDate = new GregorianCalendar();
+        GanttCalendar currentDate = CalendarFactory.createGanttCalendar();
         if (currentDate.getTimeInMillis() < this.start.getTimeInMillis())
             currentDate.setTimeInMillis(this.start.getTimeInMillis());
-        Calendar endDate = new GregorianCalendar();
+        GanttCalendar endDate = CalendarFactory.createGanttCalendar();
         endDate.setTimeInMillis(getEnd().getTimeInMillis());
         int numberOfDays = 0;
         while (currentDate.before(endDate)) {
