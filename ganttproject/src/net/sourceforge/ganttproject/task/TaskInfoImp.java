@@ -135,6 +135,7 @@ public class TaskInfoImp implements TaskInfo {
         return info;
     }
 
+
     /**
      * adds a new break line whenever the length of a note line exceeds <code>WRAP_NOTES_WIDTH</code>
      *
@@ -146,14 +147,13 @@ public class TaskInfoImp implements TaskInfo {
         for (String token : notes.split(" ", -1)) {
             if (token.length() > WRAP_NOTES_WIDTH) {
                 result.append(" ").append(token);
-                if (lastDelimPos + WRAP_NOTES_WIDTH < result.length())
-                    for (int i = lastDelimPos; i < result.length(); i += WRAP_NOTES_WIDTH) {
-                        result.insert(i + 1, '\n');
-                        lastDelimPos = i + 1;
-                    }
+                for (int i = lastDelimPos; i < result.length(); i += WRAP_NOTES_WIDTH) {
+                    result.insert(i + 1, '\n');
+                    lastDelimPos = i + 1;
+                }
             } else if (result.length() - lastDelimPos + token.length() > WRAP_NOTES_WIDTH) {
                 lastDelimPos = result.length() + 1;
-                result = new StringBuilder(result + "\n" + token);
+                result.append("\n").append(token);
             } else {
                 result.append((result.length() == 0) ? "" : " ").append(token);
             }

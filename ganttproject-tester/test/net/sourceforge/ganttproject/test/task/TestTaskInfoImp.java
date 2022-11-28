@@ -147,31 +147,18 @@ public class TestTaskInfoImp extends TaskTestCase {
         task1.setNotes("test notes");
         task1.setCompletionPercentage(20);
         GanttCalendar twoDaysAgo = CalendarFactory.createGanttCalendar();
-        twoDaysAgo.add(Calendar.DATE, -1);
+        twoDaysAgo.set(2022, 11, 23);
+        twoDaysAgo.add(Calendar.DATE, -2);
         task1.setStart(twoDaysAgo);
         GanttCalendar inTwoDays = CalendarFactory.createGanttCalendar();
+        inTwoDays.set(2022, 11, 23);
         inTwoDays.add(Calendar.DATE, 2);
         task1.setEnd(inTwoDays);
-        System.out.println(task1.getStart() + " " + task1.getEnd());
         TaskInfo taskInfo = task1.getTaskInfo();
-        int duration;
-        if (task1.getStart().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY || task1.getEnd().get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY)
-            duration = 2;
-        else if (task1.getStart().get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || task1.getEnd().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
-            duration = 1;
-        else
-            duration = 3;
-        int remaining;
-        if (task1.getEnd().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)
-            remaining = 0;
-        else if (task1.getStart().get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || task1.getEnd().get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY)
-            remaining = 1;
-        else remaining = 2;
-
         String info = "<html>Name: task_2<br>" +
-                "Duration: " + duration + " days<br>" +
+                "Duration: 4 days<br>" +
                 "Completion Percentage: 20%<br>" +
-                "Remaining Time: " + remaining + " days<br> " +
+                "Remaining Time: 3 days<br> " +
                 "Priority: normal<br>" +
                 "Notes: test notes<b></b></html>";
         assertEquals(info, taskInfo.getTaskMainInfoHTML());
