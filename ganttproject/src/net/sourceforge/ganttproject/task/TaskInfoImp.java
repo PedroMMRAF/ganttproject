@@ -6,7 +6,6 @@ import biz.ganttproject.core.time.TimeDuration;
 import net.sourceforge.ganttproject.language.GanttLanguage;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 
 /**
  * Class that implements the TaskInfo interface
