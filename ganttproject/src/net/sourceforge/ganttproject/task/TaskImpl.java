@@ -199,10 +199,9 @@ public class TaskImpl implements Task {
 
         customValues = (CustomColumnsValues) copy.getCustomValues().clone();
 
-        recalculateActivities();
         myTaskInfo = new TaskInfoImp();
         setTaskInfos();
-
+        recalculateActivities();
     }
 
     private void setTaskInfos() {
@@ -251,9 +250,9 @@ public class TaskImpl implements Task {
             public void setStart(GanttCalendar start) {
                 super.setStart(start);
                 TaskImpl.this.myEnd = null;
+                TaskImpl.this.myTaskInfo.setEndDate(null);
             }
         };
-        setTaskInfos();
         return myMutator;
     }
 
@@ -418,7 +417,6 @@ public class TaskImpl implements Task {
         GanttCalendar result = getStart().clone();
         Date newEnd = shiftDate(result.getTime(), getDuration());
         result.setTime(newEnd);
-        setTaskInfos();
         return result;
     }
 
@@ -1045,6 +1043,9 @@ public class TaskImpl implements Task {
             myStart = resultTask.getStart();
             myLength = resultTask.getDuration();
             myEnd = resultTask.getEnd();
+            this.myTaskInfo.setStartDate(myStart);
+            this.myTaskInfo.setDuration(myLength);
+            this.myTaskInfo.setEndDate(myEnd);
             if (areEventsEnabled()) {
                 myManager.fireTaskScheduleChanged(this, oldStart, oldEnd);
             }
@@ -1083,6 +1084,8 @@ public class TaskImpl implements Task {
         myLength = length;
         myEnd = null;
         recalculateActivities();
+        this.myTaskInfo.setDuration(myLength);
+        this.myTaskInfo.setEndDate(myEnd);
     }
 
     private Date shiftDate(Date input, TimeDuration duration) {
@@ -1133,7 +1136,7 @@ public class TaskImpl implements Task {
             }
         }
         myLength = getManager().createLength(myLength.getTimeUnit(), length);
-        setTaskInfos();
+        this.myTaskInfo.setDuration(this.myLength);
     }
 
     private static void recalculateActivities(GPCalendarCalc calendar, Task task, List<TaskActivity> output, Date startDate,

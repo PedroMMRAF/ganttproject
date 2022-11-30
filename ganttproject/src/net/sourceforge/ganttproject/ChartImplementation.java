@@ -56,6 +56,8 @@ public interface ChartImplementation extends ZoomListener {
 
   void beginMoveTaskInteractions(MouseEvent e, List<Task> tasks);
 
+  void beginReorderTaskInteractions(MouseEvent e, List<Task> tasks);
+
   void beginScrollViewInteraction(MouseEvent e);
 
 }

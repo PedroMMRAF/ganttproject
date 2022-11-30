@@ -1,5 +1,6 @@
 package net.sourceforge.ganttproject.task;
 
+import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import biz.ganttproject.core.time.TimeDuration;
 import net.sourceforge.ganttproject.language.GanttLanguage;
@@ -88,13 +89,13 @@ public class TaskInfoImp implements TaskInfo {
 
     @Override
     public int getRemainingTime() {
-        Calendar currentDate = new GregorianCalendar();
+        GanttCalendar currentDate = CalendarFactory.createGanttCalendar();
         if (currentDate.getTimeInMillis() < this.start.getTimeInMillis())
             currentDate.setTimeInMillis(this.start.getTimeInMillis());
-        Calendar end = new GregorianCalendar();
-        end.setTimeInMillis(getEnd().getTimeInMillis());
+        GanttCalendar endDate = CalendarFactory.createGanttCalendar();
+        endDate.setTimeInMillis(getEnd().getTimeInMillis());
         int numberOfDays = 0;
-        while (currentDate.before(end)) {
+        while (currentDate.before(endDate)) {
             if ((Calendar.SATURDAY != currentDate.get(Calendar.DAY_OF_WEEK))
                     && (Calendar.SUNDAY != currentDate.get(Calendar.DAY_OF_WEEK))) {
                 numberOfDays++;
@@ -117,8 +118,11 @@ public class TaskInfoImp implements TaskInfo {
     @Override
     public String getTaskMainInfoHTML() {
         String outPutNotes = getNotes();
-        if (outPutNotes.length() > MAX_OUTPUT_NOTES_LENGTH)
-            outPutNotes = outPutNotes.substring(0, MAX_OUTPUT_NOTES_LENGTH) + "\n <b>more...</b>";
+        boolean notesAreBiggerThenLimit = false;
+        if (outPutNotes.length() > MAX_OUTPUT_NOTES_LENGTH) {
+            outPutNotes = outPutNotes.substring(0, MAX_OUTPUT_NOTES_LENGTH) + "\n";
+            notesAreBiggerThenLimit = true;
+        }
         outPutNotes = wrapNotes(outPutNotes);
         String info = "Name: " + getName() + "\n" +
                 "Duration: " + getDuration() + " days\n" +
@@ -126,9 +130,11 @@ public class TaskInfoImp implements TaskInfo {
                 "Remaining Time: " + getRemainingTime() + " days\n " +
                 "Priority: " + getPriority() + "\n" +
                 "Notes: " + outPutNotes;
-        info = GanttLanguage.getInstance().formatText("task.notesTooltip.pattern", info.replace("\n", "<br>"));
+        info = GanttLanguage.getInstance().formatText("task.infoNotesTooltip.pattern",
+                info.replace("\n", "<br>"), notesAreBiggerThenLimit ? "more..." : "");
         return info;
     }
+
 
     /**
      * adds a new break line whenever the length of a note line exceeds <code>WRAP_NOTES_WIDTH</code>
@@ -141,14 +147,13 @@ public class TaskInfoImp implements TaskInfo {
         for (String token : notes.split(" ", -1)) {
             if (token.length() > WRAP_NOTES_WIDTH) {
                 result.append(" ").append(token);
-                if (lastDelimPos + WRAP_NOTES_WIDTH < result.length())
-                    for (int i = lastDelimPos; i < result.length(); i += WRAP_NOTES_WIDTH) {
-                        result.insert(i + 1, '\n');
-                        lastDelimPos = i + 1;
-                    }
+                for (int i = lastDelimPos; i < result.length(); i += WRAP_NOTES_WIDTH) {
+                    result.insert(i + 1, '\n');
+                    lastDelimPos = i + 1;
+                }
             } else if (result.length() - lastDelimPos + token.length() > WRAP_NOTES_WIDTH) {
                 lastDelimPos = result.length() + 1;
-                result = new StringBuilder(result + "\n" + token);
+                result.append("\n").append(token);
             } else {
                 result.append((result.length() == 0) ? "" : " ").append(token);
             }

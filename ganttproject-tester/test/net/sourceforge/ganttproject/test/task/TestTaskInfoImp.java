@@ -13,12 +13,16 @@ package net.sourceforge.ganttproject.test.task;
 
 import biz.ganttproject.core.calendar.WeekendCalendarImpl;
 import biz.ganttproject.core.time.CalendarFactory;
+import biz.ganttproject.core.time.GanttCalendar;
+import biz.ganttproject.core.time.TimeDurationImpl;
 import net.sourceforge.ganttproject.TestSetupHelper;
+import net.sourceforge.ganttproject.task.TaskImpl;
 import net.sourceforge.ganttproject.task.TaskInfo;
 import net.sourceforge.ganttproject.task.TaskManager;
 import net.sourceforge.ganttproject.task.Task;
 
 import java.text.DateFormat;
+import java.util.Calendar;
 import java.util.Locale;
 
 
@@ -27,21 +31,28 @@ public class TestTaskInfoImp extends TaskTestCase {
         new CalendarFactory() {
             {
                 setLocaleApi(new LocaleApi() {
-                    @Override
                     public Locale getLocale() {
-                        return Locale.US;
+                        return new Locale("pt");
                     }
 
-                    @Override
                     public DateFormat getShortDateFormat() {
-                        return DateFormat.getDateInstance(DateFormat.SHORT, Locale.US);
+                        return DateFormat.getDateInstance(DateFormat.SHORT, getLocale());
                     }
                 });
             }
         };
     }
 
-    public void testeGetTaskMainInfoHTML1() {
+    GanttCalendar getNextDate(int weekDay) {
+        GanttCalendar currentDate = CalendarFactory.createGanttCalendar();
+        while (currentDate.get(Calendar.DAY_OF_WEEK) != weekDay) {
+            currentDate.add(Calendar.DATE, 1);
+        }
+        return currentDate;
+    }
+
+
+    public void testGetTaskMainInfoHTML1() {
         Task task1 = getTaskManager().createTask();
         task1.setStart(TestSetupHelper.newFriday());// Friday
         task1.setEnd(TestSetupHelper.newTuesday()); // Tuesday
@@ -52,44 +63,45 @@ public class TestTaskInfoImp extends TaskTestCase {
                 "Completion Percentage: 0%<br>" +
                 "Remaining Time: 0 days<br> " +
                 "Priority: normal<br>" +
-                "Notes: </html>";
-        assertEquals(info, taskInfo.getTaskMainInfoHTML() );
+                "Notes: <b></b></html>";
+        assertEquals(info, taskInfo.getTaskMainInfoHTML());
     }
+
     public void testGetTaskMainInfoHTML2() {
-        Task task1 = getTaskManager().createTask();
-        task1.setStart(CalendarFactory.createGanttCalendar(2022, 12, 25));
-        task1.setEnd(CalendarFactory.createGanttCalendar(2023, 1, 2));
+        Task task1 = createTask();
+        task1.setStart(getNextDate(Calendar.TUESDAY));
+        task1.setDuration(getTaskManager().createLength(4));
         task1.setName("task_1");
         TaskInfo taskInfo = task1.getTaskInfo();
         String info = "<html>Name: task_1<br>" +
-                "Duration: 6 days<br>" +
+                "Duration: 4 days<br>" +
                 "Completion Percentage: 0%<br>" +
-                "Remaining Time: 6 days<br> " +
+                "Remaining Time: 4 days<br> " +
                 "Priority: normal<br>" +
-                "Notes: </html>";
-        assertEquals(info, taskInfo.getTaskMainInfoHTML() );
+                "Notes: <b></b></html>";
+        assertEquals(info, taskInfo.getTaskMainInfoHTML());
     }
 
     public void testGetTaskMainInfoHTML3() {
-        Task task1 = getTaskManager().createTask();
-        task1.setStart(CalendarFactory.createGanttCalendar(2022, 12, 25));
-        task1.setEnd(CalendarFactory.createGanttCalendar(2023, 1, 2));
+        Task task1 = createTask();
+        task1.setStart(getNextDate(Calendar.TUESDAY));
+        task1.setDuration(getTaskManager().createLength(4));
         task1.setName("task_1");
         task1.setNotes("test notes");
         TaskInfo taskInfo = task1.getTaskInfo();
         String info = "<html>Name: task_1<br>" +
-                "Duration: 6 days<br>" +
+                "Duration: 4 days<br>" +
                 "Completion Percentage: 0%<br>" +
-                "Remaining Time: 6 days<br> " +
+                "Remaining Time: 4 days<br> " +
                 "Priority: normal<br>" +
-                "Notes: test notes</html>";
-        assertEquals(info, taskInfo.getTaskMainInfoHTML() );
+                "Notes: test notes<b></b></html>";
+        assertEquals(info, taskInfo.getTaskMainInfoHTML());
     }
 
     public void testGetTaskMainInfoHTML4() {
-        Task task1 = getTaskManager().createTask();
-        task1.setStart(CalendarFactory.createGanttCalendar(2022, 12, 25));
-        task1.setEnd(CalendarFactory.createGanttCalendar(2023, 1, 2));
+        Task task1 = createTask();
+        task1.setStart(getNextDate(Calendar.TUESDAY));
+        task1.setDuration(getTaskManager().createLength(4));
         task1.setName("task_1");
         task1.setNotes("test notes test notes test notes test notes test notes test notes test notes test notes " +
                 "test notes test notes test notes test notes test notes test notes test notes test notes test notes " +
@@ -100,9 +112,9 @@ public class TestTaskInfoImp extends TaskTestCase {
                 "notes test notes test notes test notes test notes test notes test notes test notes ");
         TaskInfo taskInfo = task1.getTaskInfo();
         String info = "<html>Name: task_1<br>" +
-                "Duration: 6 days<br>" +
+                "Duration: 4 days<br>" +
                 "Completion Percentage: 0%<br>" +
-                "Remaining Time: 6 days<br> " +
+                "Remaining Time: 4 days<br> " +
                 "Priority: normal<br>" +
                 "Notes: test notes test notes test notes test<br>notes test notes test notes test notes<br>" +
                 "test notes test notes test notes test<br>notes test notes test notes test notes<br>" +
@@ -110,12 +122,12 @@ public class TestTaskInfoImp extends TaskTestCase {
                 "test notes test notes test notes test<br>notes test notes test notes test notes<br>" +
                 "test notes test notes test notes test<br>notes test notes test notes test notes<br>" +
                 "test notes test notes test notes test<br>notes test notes test notes test notes<br>" +
-                "test notes test notes test notes test <br><br><b>more...</b></html>";
+                "test notes test notes test notes test <br><b>more...</b></html>";
         assertEquals(info, taskInfo.getTaskMainInfoHTML());
     }
 
     public void testGetTaskMainInfoHTML5() {
-        Task task1 = getTaskManager().createTask();
+        Task task1 = createTask();
         task1.setName("task_2");
         task1.setNotes("test notes");
         task1.setCompletionPercentage(20);
@@ -125,9 +137,33 @@ public class TestTaskInfoImp extends TaskTestCase {
                 "Completion Percentage: 20%<br>" +
                 "Remaining Time: 1 days<br> " +
                 "Priority: normal<br>" +
-                "Notes: test notes</html>";
-        assertEquals(info, taskInfo.getTaskMainInfoHTML() );
+                "Notes: test notes<b></b></html>";
+        assertEquals(info, taskInfo.getTaskMainInfoHTML());
     }
+
+    public void testGetTaskMainInfoHTML6() {
+        Task task1 = getTaskManager().createTask();
+        task1.setName("task_2");
+        task1.setNotes("test notes");
+        task1.setCompletionPercentage(20);
+        GanttCalendar twoDaysAgo = CalendarFactory.createGanttCalendar();
+        twoDaysAgo.set(2022, 11, 23);
+        twoDaysAgo.add(Calendar.DATE, -2);
+        task1.setStart(twoDaysAgo);
+        GanttCalendar inTwoDays = CalendarFactory.createGanttCalendar();
+        inTwoDays.set(2022, 11, 23);
+        inTwoDays.add(Calendar.DATE, 2);
+        task1.setEnd(inTwoDays);
+        TaskInfo taskInfo = task1.getTaskInfo();
+        String info = "<html>Name: task_2<br>" +
+                "Duration: 4 days<br>" +
+                "Completion Percentage: 20%<br>" +
+                "Remaining Time: 3 days<br> " +
+                "Priority: normal<br>" +
+                "Notes: test notes<b></b></html>";
+        assertEquals(info, taskInfo.getTaskMainInfoHTML());
+    }
+
     @Override
     protected TaskManager newTaskManager() {
         return TestSetupHelper.newTaskManagerBuilder().withCalendar(myWeekendCalendar).build();
