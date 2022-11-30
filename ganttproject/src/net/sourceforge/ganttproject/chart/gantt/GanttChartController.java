@@ -146,8 +146,7 @@ public class GanttChartController extends AbstractChartImplementation implements
   }
   
   public void beginReorderTaskInteractions(MouseEvent e, List<Task> tasks) {
-    setActiveInteraction(new ReorderTaskInteractions(e, tasks, getTaskManager(),
-            new TimelineFacadeImpl(getChartModel(), getTaskManager()), getUIFacade(), myTree));
+    setActiveInteraction(new ReorderTaskInteractions(e, tasks, getTaskManager(), getUIFacade(), myTree));
   }
 
   @Override
