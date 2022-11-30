@@ -1,19 +1,17 @@
 package net.sourceforge.ganttproject.chart.mouse;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
 import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.gui.UIFacade;
 import net.sourceforge.ganttproject.task.Task;
 import net.sourceforge.ganttproject.task.TaskContainmentHierarchyFacade;
 import net.sourceforge.ganttproject.task.TaskManager;
 
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.Comparator;
 import java.util.List;
-import java.util.ListIterator;
 
-public class ReorderTaskInteractions extends MouseInteractionBase implements MouseInteraction {
+public class ReorderTaskInteractions implements MouseInteraction {
     private static final int MOVE_HEIGHT = 20;
 
     private final List<Task> myTasks;
@@ -27,8 +25,7 @@ public class ReorderTaskInteractions extends MouseInteractionBase implements Mou
     private int maxOffset;
 
     public ReorderTaskInteractions(MouseEvent e, List<Task> tasks, TaskManager taskManager,
-                                   TimelineFacade chartDateGrid, UIFacade uiFacade, GanttTree2 tree) {
-        super(chartDateGrid.getDateAt(e.getX()), chartDateGrid);
+                                   UIFacade uiFacade, GanttTree2 tree) {
         myUIFacade = uiFacade;
         myTasks = tasks;
         myTaskHierarchy = taskManager.getTaskHierarchy();
@@ -38,7 +35,7 @@ public class ReorderTaskInteractions extends MouseInteractionBase implements Mou
         myTasks.sort(new Comparator<Task>() {
             @Override
             public int compare(Task o1, Task o2) {
-                return myTaskHierarchy.getTaskIndex(o1) - myTaskHierarchy.getTaskIndex(o2);
+                return myTaskHierarchy.compareDocumentOrder(o1, o2);
             }
         });
 
@@ -52,8 +49,6 @@ public class ReorderTaskInteractions extends MouseInteractionBase implements Mou
             int index = myTaskHierarchy.getTaskIndex(task);
             minOffset = Math.max(- index, minOffset);
             maxOffset = Math.min(maxIndex - index, maxOffset);
-
-
         }
     }
 
@@ -78,33 +73,38 @@ public class ReorderTaskInteractions extends MouseInteractionBase implements Mou
 
         final int finalCurrentMovement = currentMovement;
 
-        moveOffset(finalCurrentMovement - totalMovement);
+        myTree.commitIfEditing();
+
+        myUIFacade.getUndoManager().undoableEdit("Task reordered", new Runnable() {
+            @Override
+            public void run() {
+                moveOffset(finalCurrentMovement - totalMovement);
+            }
+        });
+
+        myUIFacade.getTaskTree().makeVisible(myTasks.get(0));
+        myUIFacade.getGanttChart().getProject().setModified();
 
         totalMovement = currentMovement;
     }
 
     public void moveOffset(int offset) {
-        myTree.commitIfEditing();
-
         TwoWayIterator<Task> it = new TwoWayIterator<>(myTasks, offset > 0);
         while (it.hasNext()) {
             final Task task = it.next();
             final Task parent = myTaskHierarchy.getContainer(task);
             final int index = myTaskHierarchy.getTaskIndex(task) + offset;
 
-            myUIFacade.getUndoManager().undoableEdit("Task reordered", new Runnable() {
-                @Override
-                public void run() {
-                    myTaskHierarchy.move(task, parent, index);
-                }
-            });
+            myTaskHierarchy.move(task, parent, index);
         }
-
-        myUIFacade.getTaskTree().makeVisible(myTasks.get(0));
-        myUIFacade.getGanttChart().getProject().setModified();
     }
 
     @Override
     public void finish() {
+    }
+
+    @Override
+    public void paint(Graphics g) {
+
     }
 }
