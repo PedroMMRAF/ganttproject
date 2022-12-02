@@ -114,6 +114,10 @@ public class TaskInfoImp implements TaskInfo {
         return notes;
     }
 
+    private String translate(String key) {
+        return GanttLanguage.getInstance().getText(key);
+    }
+
     @Override
     public String getTaskMainInfoHTML() {
         String outPutNotes = getNotes();
@@ -123,15 +127,10 @@ public class TaskInfoImp implements TaskInfo {
             notesAreBiggerThenLimit = true;
         }
         outPutNotes = wrapNotes(outPutNotes);
-        String info = "Name: " + getName() + "\n" +
-                "Duration: " + getDuration() + " days\n" +
-                "Completion Percentage: " + getCompletionPercentage() + "%\n" +
-                "Remaining Time: " + getRemainingTime() + " days\n " +
-                "Priority: " + getPriority() + "\n" +
-                "Notes: " + outPutNotes;
-        info = GanttLanguage.getInstance().formatText("task.infoNotesTooltip.pattern",
-                info.replace("\n", "<br>"), notesAreBiggerThenLimit ? "more..." : "");
-        return info;
+        outPutNotes = outPutNotes.replace("\n", "<br>");
+       return GanttLanguage.getInstance().formatText("task.infoNotesTooltip.pattern", getName(), getDuration(),
+                getCompletionPercentage(), getRemainingTime(), getPriority(),
+                outPutNotes, notesAreBiggerThenLimit ? translate("more") : "");
     }
 
 
