@@ -14,6 +14,7 @@ import biz.ganttproject.core.time.CalendarFactory;
 import biz.ganttproject.core.time.GanttCalendar;
 import net.sourceforge.ganttproject.GanttGraphicArea;
 import net.sourceforge.ganttproject.GanttProject;
+import net.sourceforge.ganttproject.GanttTree2;
 import net.sourceforge.ganttproject.TestSetupHelper;
 import net.sourceforge.ganttproject.action.task.TaskMoveUpAction;
 import net.sourceforge.ganttproject.chart.gantt.GanttChartController;
