@@ -71,7 +71,7 @@ public class ReorderTaskInteractions implements MouseInteraction {
 
     @Override
     public void apply(MouseEvent event) {
-        reorderToIndexOffset((myStartMousePos - event.getY()) / MOVE_HEIGHT);
+        reorderToIndexOffset((event.getY() - myStartMousePos) / MOVE_HEIGHT);
     }
 
     /**
