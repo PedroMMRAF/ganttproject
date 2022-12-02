@@ -8,94 +8,108 @@ import net.sourceforge.ganttproject.task.TaskManager;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.Comparator;
 import java.util.List;
 
 public class ReorderTaskInteractions implements MouseInteraction {
-    private static final int MOVE_HEIGHT = 20;
+    public static final int MOVE_HEIGHT = 20;
 
-    private final List<Task> myTasks;
+    private final List<Task> mySelectedTasks;
     private final UIFacade myUIFacade;
-    private final MouseEvent myMouseEvent;
+    private final int myStartMousePos;
     private final TaskContainmentHierarchyFacade myTaskHierarchy;
-    private final GanttTree2 myTree;
 
-    private int totalMovement;
-    private int minOffset;
-    private int maxOffset;
+    private int currentIndexOffset;
+    private int minIndexOffset;
+    private int maxIndexOffset;
 
-    public ReorderTaskInteractions(MouseEvent e, List<Task> tasks, TaskManager taskManager,
-                                   UIFacade uiFacade, GanttTree2 tree) {
+    /**
+     * Mouse Interaction related to reordering tasks in the hierarchy.
+     *
+     * @param startMousePos the mouse's first start position
+     * @param selectedTasks list of selected tasks
+     * @param taskManager the project's task manager
+     * @param uiFacade the project's UI
+     */
+    public ReorderTaskInteractions(int startMousePos, List<Task> selectedTasks,
+                                   TaskManager taskManager, UIFacade uiFacade) {
         myUIFacade = uiFacade;
-        myTasks = tasks;
+        mySelectedTasks = selectedTasks;
         myTaskHierarchy = taskManager.getTaskHierarchy();
-        myMouseEvent = e;
-        myTree = tree;
+        myStartMousePos = startMousePos;
 
-        myTasks.sort(new Comparator<Task>() {
-            @Override
-            public int compare(Task o1, Task o2) {
-                return myTaskHierarchy.compareDocumentOrder(o1, o2);
-            }
-        });
+        mySelectedTasks.sort(myTaskHierarchy::compareDocumentOrder);
 
-        totalMovement = 0;
+        currentIndexOffset = 0;
 
-        minOffset = Integer.MIN_VALUE;
-        maxOffset = Integer.MAX_VALUE;
+        minIndexOffset = Integer.MIN_VALUE;
+        maxIndexOffset = Integer.MAX_VALUE;
 
-        for (Task task : myTasks) {
-            int maxIndex = getLastSiblingIndex(task);
+        for (Task task : mySelectedTasks) {
+            int maxIndex = getContainerSize(task) - 1;
             int index = myTaskHierarchy.getTaskIndex(task);
-            minOffset = Math.max(- index, minOffset);
-            maxOffset = Math.min(maxIndex - index, maxOffset);
+            minIndexOffset = Math.max(- index, minIndexOffset);
+            maxIndexOffset = Math.min(maxIndex - index, maxIndexOffset);
         }
     }
 
-    public int getLastSiblingIndex(Task task) {
+    /**
+     * Gets the size of the container of a task,
+     * regardless of implementation.
+     *
+     * @param task a nested task
+     * @return the size of the container the given task is in
+     */
+    public int getContainerSize(Task task) {
         Task nextSibling;
 
         while ((nextSibling = myTaskHierarchy.getNextSibling(task)) != null) {
             task = nextSibling;
         }
 
-        return myTaskHierarchy.getTaskIndex(task);
+        return myTaskHierarchy.getTaskIndex(task) + 1;
     }
 
     @Override
     public void apply(MouseEvent event) {
-        int currentMovement = event.getY() - myMouseEvent.getY();
-        currentMovement /= MOVE_HEIGHT;
-        currentMovement = Math.max(minOffset, Math.min(maxOffset, currentMovement));
-
-        if (currentMovement == totalMovement)
-            return;
-
-        final int finalCurrentMovement = currentMovement;
-
-        myTree.commitIfEditing();
-
-        myUIFacade.getUndoManager().undoableEdit("Task reordered", new Runnable() {
-            @Override
-            public void run() {
-                moveOffset(finalCurrentMovement - totalMovement);
-            }
-        });
-
-        myUIFacade.getTaskTree().makeVisible(myTasks.get(0));
-        myUIFacade.getGanttChart().getProject().setModified();
-
-        totalMovement = currentMovement;
+        reorderToIndexOffset((myStartMousePos - event.getY()) / MOVE_HEIGHT);
     }
 
-    public void moveOffset(int offset) {
-        TwoWayIterator<Task> it = new TwoWayIterator<>(myTasks, offset > 0);
+    /**
+     * Reorders tasks given offset to move by,
+     * taking into consideration that the mouse moves
+     * in the opposite direction of task indices.
+     *
+     * @param newIndexOffset the offset relative to the starting conditions
+     */
+    public void reorderToIndexOffset(int newIndexOffset) {
+        newIndexOffset = Math.max(minIndexOffset, Math.min(maxIndexOffset, newIndexOffset));
+
+        int movedIndexOffset = newIndexOffset - currentIndexOffset;
+        currentIndexOffset = newIndexOffset;
+
+        if (movedIndexOffset == 0) {
+            return;
+        }
+
+        TwoWayIterator<Task> it = new TwoWayIterator<>(mySelectedTasks, movedIndexOffset > 0);
+
         while (it.hasNext()) {
             final Task task = it.next();
             final Task parent = myTaskHierarchy.getContainer(task);
-            final int index = myTaskHierarchy.getTaskIndex(task) + offset;
+            final int index = myTaskHierarchy.getTaskIndex(task) + movedIndexOffset;
 
-            myTaskHierarchy.move(task, parent, index);
+            if (myUIFacade.getTaskTree() instanceof GanttTree2)
+                ((GanttTree2)myUIFacade.getTaskTree()).commitIfEditing();
+
+            myUIFacade.getUndoManager().undoableEdit("Task reordered", new Runnable() {
+                @Override
+                public void run() {
+                    myTaskHierarchy.move(task, parent, index);
+                }
+            });
+
+            myUIFacade.getTaskTree().makeVisible(mySelectedTasks.get(0));
+            myUIFacade.getGanttChart().getProject().setModified();
         }
     }
 
@@ -105,6 +119,5 @@ public class ReorderTaskInteractions implements MouseInteraction {
 
     @Override
     public void paint(Graphics g) {
-
     }
 }
