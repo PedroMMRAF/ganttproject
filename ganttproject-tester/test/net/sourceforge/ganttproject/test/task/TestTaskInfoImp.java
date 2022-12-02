@@ -45,7 +45,12 @@ public class TestTaskInfoImp extends TaskTestCase {
         };
     }
 
-    GanttCalendar getNextDate(int weekDay) {
+    /**
+     *
+     * @param weekDay day of the wek
+     * @return the next day of week equals to <code>weekDay</code>
+     */
+    private GanttCalendar getNextDate(int weekDay) {
         GanttCalendar currentDate = CalendarFactory.createGanttCalendar();
         while (currentDate.get(Calendar.DAY_OF_WEEK) != weekDay) {
             currentDate.add(Calendar.DATE, 1);
@@ -53,7 +58,10 @@ public class TestTaskInfoImp extends TaskTestCase {
         return currentDate;
     }
 
-
+    /**
+     * tests the remaining time when there is a weekend in
+     * the middle of the start and end date of the task
+     */
     public void testGetTaskMainInfoHTML1() {
         Task task1 = getTaskManager().createTask();
         task1.setStart(TestSetupHelper.newFriday());// Friday
@@ -69,6 +77,10 @@ public class TestTaskInfoImp extends TaskTestCase {
         assertEquals(info, taskInfo.getTaskMainInfoHTML());
     }
 
+    /**
+     * tests the remaining time when only the start
+     * date and duration are given
+     */
     public void testGetTaskMainInfoHTML2() {
         Task task1 = createTask();
         task1.setStart(getNextDate(Calendar.TUESDAY));
@@ -84,6 +96,9 @@ public class TestTaskInfoImp extends TaskTestCase {
         assertEquals(info, taskInfo.getTaskMainInfoHTML());
     }
 
+    /**
+     * test if notes are being shown in the information
+     */
     public void testGetTaskMainInfoHTML3() {
         Task task1 = createTask();
         task1.setStart(getNextDate(Calendar.TUESDAY));
@@ -100,6 +115,10 @@ public class TestTaskInfoImp extends TaskTestCase {
         assertEquals(info, taskInfo.getTaskMainInfoHTML());
     }
 
+    /**
+     * test to see if the notes do not exceed
+     * their limit size and width
+     */
     public void testGetTaskMainInfoHTML4() {
         Task task1 = createTask();
         task1.setStart(getNextDate(Calendar.TUESDAY));
@@ -128,6 +147,10 @@ public class TestTaskInfoImp extends TaskTestCase {
         assertEquals(info, taskInfo.getTaskMainInfoHTML());
     }
 
+    /**
+     * test to see if the percentage complete
+     * is being shown correctly
+     */
     public void testGetTaskMainInfoHTML5() {
         Task task1 = createTask();
         task1.setName("task_2");
@@ -143,6 +166,9 @@ public class TestTaskInfoImp extends TaskTestCase {
         assertEquals(info, taskInfo.getTaskMainInfoHTML());
     }
 
+    /**
+     * test when duration is greater than remaining time
+     */
     public void testGetTaskMainInfoHTML6() {
         Task task1 = getTaskManager().createTask();
         task1.setName("task_2");
@@ -166,6 +192,9 @@ public class TestTaskInfoImp extends TaskTestCase {
         assertEquals(info, taskInfo.getTaskMainInfoHTML());
     }
 
+    /**
+     * test to see if the translation is being done
+     */
     public void testGetTaskMainInfoHTML7() {
         GanttLanguage.getInstance().setLocale(new Locale("pt_PT"));
         Task task1 = createTask();
