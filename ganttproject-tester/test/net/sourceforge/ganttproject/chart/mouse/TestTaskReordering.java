@@ -24,6 +24,7 @@ public class TestTaskReordering extends TaskTestCase {
         List<Task> actualOrder = manager.getTaskHierarchy().getTasksInDocumentOrder();
 
         for (int i = 0; i < expectedOrder.length; i++) {
+            //System.out.printf("%s -> %s\n", actualOrder.get(i), expectedOrder[i]);
             assertEquals(actualOrder.get(i), expectedOrder[i]);
         }
     }
@@ -106,6 +107,92 @@ public class TestTaskReordering extends TaskTestCase {
         // Check task order
         expectTaskOrder(manager, new Task[] {
                 task1, task3, task2, task4
+        });
+    }
+
+    /**
+     * Moving multiple tasks up the hierarchy
+     */
+    public void testTaskReordering4() {
+        TaskManager manager = TestSetupHelper.newTaskManagerBuilder().build();
+        Task task1 = manager.createTask();
+        Task task2 = manager.createTask();
+        Task task3 = manager.createTask();
+        Task task4 = manager.createTask();
+        Task task5 = manager.createTask();
+        Task task6 = manager.createTask();
+
+        // Reorder selected tasks
+        ReorderTaskInteractions interaction = startReorder(manager, new Task[] {
+                task2, task4, task5
+        });
+        interaction.reorderToIndexOffset(-1);
+
+        // Check task order
+        expectTaskOrder(manager, new Task[] {
+                task2, task1, task4, task5, task3, task6
+        });
+    }
+
+    /**
+     * Moving a sub task
+     */
+    public void testTaskReordering5() {
+        TaskManager manager = TestSetupHelper.newTaskManagerBuilder().build();
+        Task task0 = manager.createTask();
+        Task task1 = manager.createTask();
+        Task task2 = manager.createTask();
+        Task task3 = manager.createTask();
+        Task task4 = manager.createTask();
+        Task task5 = manager.createTask();
+        Task task6 = manager.createTask();
+        Task task7 = manager.createTask();
+
+        manager.getTaskHierarchy().move(task4, task3);
+        manager.getTaskHierarchy().move(task5, task3);
+        manager.getTaskHierarchy().move(task6, task3);
+        manager.getTaskHierarchy().move(task7, task3);
+
+        // Reorder selected tasks
+        ReorderTaskInteractions interaction = startReorder(manager, new Task[] {
+                task6
+        });
+        interaction.reorderToIndexOffset(-4);
+
+        // Check task order
+        expectTaskOrder(manager, new Task[] {
+                task0, task1, task2, task3, task6, task4, task5, task7
+        });
+    }
+
+    /**
+     * Moving a task and a sub task
+     */
+    public void testTaskReordering6() {
+        TaskManager manager = TestSetupHelper.newTaskManagerBuilder().build();
+        Task task0 = manager.createTask();
+        Task task1 = manager.createTask();
+        Task task2 = manager.createTask();
+        Task task3 = manager.createTask();
+        Task task4 = manager.createTask();
+        Task task5 = manager.createTask();
+        Task task6 = manager.createTask();
+        Task task7 = manager.createTask();
+
+        manager.getTaskHierarchy().move(task4, task3);
+        manager.getTaskHierarchy().move(task5, task3);
+        manager.getTaskHierarchy().move(task6, task3);
+        manager.getTaskHierarchy().move(task7, task3);
+
+        // Reorder selected tasks
+        ReorderTaskInteractions interaction = startReorder(manager, new Task[] {
+                task0, task6
+        });
+        interaction.reorderToIndexOffset(3);
+
+        // Check task order
+        expectTaskOrder(manager, new Task[] {
+                task1, task0, task2, task3, task4, task5, task7, task6
         });
     }
 }
