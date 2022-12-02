@@ -853,7 +853,12 @@ public class TaskManagerImpl implements TaskManager {
 
     @Override
     public Task getNextSibling(Task nestedTask) {
-      throw new UnsupportedOperationException();
+      int pos = getTaskIndex(nestedTask);
+      try {
+        return nestedTask.getSupertask().getNestedTasks()[pos + 1];
+      } catch (ArrayIndexOutOfBoundsException ex) {
+        return null;
+      }
     }
 
     @Override
@@ -894,7 +899,7 @@ public class TaskManagerImpl implements TaskManager {
 
     @Override
     public void move(Task whatMove, Task whereMove, int index) {
-      whatMove.move(whereMove);
+      whatMove.move(whereMove, index);
     }
 
     @Override

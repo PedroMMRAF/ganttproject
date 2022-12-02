@@ -71,3 +71,5 @@ task copyEclipsito(type: Copy) {
 }
 
 task copyPlugin(dependsOn: ['copyPluginFiles', 'copyEclipsito']) << { println "Copying $project.name to $rootProject.pluginsDir" }
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
